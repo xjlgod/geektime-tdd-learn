@@ -29,14 +29,12 @@ public class ArgsTest {
     @Test
     void should_set_boolean_option_to_return_true_if_flag_present(){
         BooleanOption option = Args.parse(BooleanOption.class, "-l");
-
         assertTrue(option.getLogging());
     }
 
     @Test
     void should_set_boolean_option_to_return_false_if_flag_not_present(){
         BooleanOption option = Args.parse(BooleanOption.class);
-
         assertFalse(option.getLogging());
     }
 

@@ -2,7 +2,9 @@ package org.xjl.command;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class Args {
@@ -20,21 +22,14 @@ public class Args {
         }
     }
 
-    private static Object parseOption(List<String> arguments, Parameter
-            parameter) {
-        Object value = null;
-        Option option = parameter.getAnnotation(Option.class);
-        if (parameter.getType() == boolean.class) {
-            value = arguments.contains("-" + option.value());
-        }
-        if (parameter.getType() == int.class) {
-            int index = arguments.indexOf("-" + option.value());
-            value = Integer.parseInt(arguments.get(index + 1));
-        }
-        if (parameter.getType() == String.class) {
-            int index = arguments.indexOf("-" + option.value());
-            value = arguments.get(index + 1);
-        }
-        return value;
+    private static Object parseOption(List<String> arguments, Parameter parameter) {
+        return parserMap.get(parameter.getType()).parseOption(arguments, parameter.getAnnotation(Option.class));
     }
+
+    private static Map<Class<?>, Parser> parserMap = new HashMap<Class<?>, Parser>(){{
+        put(boolean.class, new BooleanOptionParser());
+        put(int.class, new SingleValueOptionParser<>(Integer::parseInt));
+        put(String.class, new SingleValueOptionParser<>(String::valueOf));
+    }};
+
 }
