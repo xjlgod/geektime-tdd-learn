@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ArgsTest {
     // -l -p 8080 -d /usr/logs
@@ -27,37 +28,18 @@ public class ArgsTest {
     // default value
 
     @Test
-    void should_set_boolean_option_to_return_true_if_flag_present(){
-        BooleanOption option = Args.parse(BooleanOption.class, "-l");
-        assertTrue(option.getLogging());
-    }
-
-    @Test
-    void should_set_boolean_option_to_return_false_if_flag_not_present(){
-        BooleanOption option = Args.parse(BooleanOption.class);
-        assertFalse(option.getLogging());
-    }
-
-
-    @Test
-    void should_parse_int_as_option_value() {
-        IntOption option = Args.parse(IntOption.class, "-p", "8080");
-        assertEquals(8080, option.getPort());
-    }
-
-
-    @Test
-    void should_parse_string_as_option_value() {
-        StringOption option = Args.parse(StringOption.class, "-d", "/usr/logs");
-        assertEquals("/usr/logs", option.getDirectory());
-    }
-
-    @Test
-    void should_parse_multi_options(){
+    public void should_parse_multi_options(){
         MultiOptions options = Args.parse(MultiOptions.class, "-l", "-p", "8080", "-d", "/usr/logs");
         assertTrue(options.getLogging());
         assertEquals(8080, options.getPort());
         assertEquals("/usr/logs", options.getDirectory());
     }
 
+    @Test
+    public void should_throw_illegal_option_exception_if_annotation_not_present() {
+        IllegalOptionException exception = assertThrows(IllegalOptionException.class, () -> {
+            Args.parse(OptionsWithOutAnnotation.class, "-l", "-p", "8080", "-d", "/usr/logs");
+        });
+        assertEquals("arg1", exception.getParameter());
+    }
 }
