@@ -1,4 +1,6 @@
 package org.xjl.command;
+import org.xjl.command.exceptions.IllegalOptionException;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
@@ -31,10 +33,12 @@ public class Args {
         return parserMap.get(parameter.getType()).parse(arguments, parameter.getAnnotation(Option.class));
     }
 
-    private static Map<Class<?>, Parser> parserMap = new HashMap<Class<?>, Parser>(){{
-        put(boolean.class, new BooleanOptionParser());
-        put(int.class, new SingleValueOptionParser<>(Integer::parseInt, 0));
-        put(String.class, new SingleValueOptionParser<>(String::valueOf, ""));
+    private static Map<Class<?>, OptionParser> parserMap = new HashMap<Class<?>, OptionParser>(){{
+        put(boolean.class, OptionParsers.bool());
+        put(int.class, OptionParsers.unary(Integer::parseInt, 0));
+        put(String.class, OptionParsers.unary(String::valueOf, ""));
+        put(String[].class, OptionParsers.list(String[]::new, String::valueOf));
+        put(Integer[].class, OptionParsers.list(Integer[]::new, Integer::parseInt));
     }};
 
 }

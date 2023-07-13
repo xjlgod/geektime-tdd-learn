@@ -1,4 +1,4 @@
-package org.xjl.command;
+package org.xjl.command.exceptions;
 
 public class IllegalOptionException extends RuntimeException {
     private final String parameter;

@@ -1,11 +1,11 @@
 package org.xjl.command;
 
 import org.junit.jupiter.api.Test;
+import org.xjl.command.exceptions.IllegalOptionException;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ArgsTest {
     // -l -p 8080 -d /usr/logs
@@ -41,5 +41,13 @@ public class ArgsTest {
             Args.parse(OptionsWithOutAnnotation.class, "-l", "-p", "8080", "-d", "/usr/logs");
         });
         assertEquals("arg1", exception.getParameter());
+    }
+
+    //TODO: -g this is a list -d 1 2 -3 5
+    @Test
+    public void should_example2() {
+        ListOption option = Args.parse(ListOption.class,  "-g", "this", "is", "-d", "1", "2", "-3", "5");
+        assertArrayEquals(new String[]{"this", "is"}, option.getGroup());
+        assertArrayEquals(new Integer[]{1, 2, -3, 5}, option.getDecimals());
     }
 }
