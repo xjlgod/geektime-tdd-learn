@@ -11,7 +11,8 @@ import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 
 class OptionParsers {
-    public static <T> OptionParser<T> unary(Function<String, T> parser, T defaultValue) {
+
+    public static <T> OptionParser<T> unary(T defaultValue, Function<String, T> parser) {
         return (arguments, option) -> getValues(arguments, option, 1)
                 .map(it -> parseValue(option, it.get(0), parser)).orElse(defaultValue);
     }

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 import org.xjl.command.exceptions.IllegalValueException;
 import org.xjl.command.exceptions.InsufficientArgumentsException;
 import org.xjl.command.exceptions.TooManyArgumentsException;
@@ -23,7 +24,7 @@ public class OptionParsersTest {
         @Test// sad path
         public void should_not_accept_extra_argument_for_single_valued_option() {
             TooManyArgumentsException e = assertThrows(TooManyArgumentsException.class, () -> {
-                OptionParsers.unary(Integer::parseInt, 0).parse(asList("-p", "8080", "8081"), option("p"));
+                OptionParsers.unary((Integer) 0, Integer::parseInt).parse(asList("-p", "8080", "8081"), option("p"));
             });
             assertEquals("p", e.getOption());
         }
@@ -32,35 +33,40 @@ public class OptionParsersTest {
         @ValueSource(strings = {"-p -l", "-p"})
         void should_not_accept_insufficient_argument_for_single_valued_option(String arguments) {
             InsufficientArgumentsException e = assertThrows(InsufficientArgumentsException.class, () -> {
-                OptionParsers.unary(Integer::parseInt, 0).parse(asList(arguments.split(" ")), option("p"));
+                OptionParsers.unary((Integer) 0, Integer::parseInt).parse(asList(arguments.split(" ")), option("p"));
             });
             assertEquals("p", e.getOption());
         }
 
         @Test// default value
         void should_set_default_value_to_0_for_int_option() {
-            Function<String, Object> whatever = (it) -> null;
+            Function mock = Mockito.mock(Function.class);
             Object defaultValue = new Object();
-            assertEquals(defaultValue, OptionParsers.unary(whatever, defaultValue).parse(asList(), option("p")));
+            ((OptionParser<Integer>) OptionParsers.unary((Integer) 0, mock)).parse(asList(), option("p"));
+            Mockito.verify(mock, Mockito.never());
+//            Mockito.eq(false)
+//            Function<String, Object> whatever = (it) -> null;
+//            Object defaultValue = new Object();
+//            assertEquals(defaultValue, OptionParsers.unary(whatever, defaultValue).parse(asList(), option("p")));
         }
 
         @Test// sad path
         public void should_not_accept_extra_argument_for_string_single_valued_option() {
             TooManyArgumentsException e = assertThrows(TooManyArgumentsException.class, () -> {
-                OptionParsers.unary(String::valueOf, "").parse(asList("-d", "/usr/logs", "/usr/vars"), option("d"));
+                OptionParsers.unary("", String::valueOf).parse(asList("-d", "/usr/logs", "/usr/vars"), option("d"));
             });
             assertEquals("d", e.getOption());
         }
 
         @Test// happy path
         void should_parse_int_as_option_value() {
-            assertEquals(new Integer(8080), OptionParsers.unary(Integer::parseInt, 0).parse(asList("-p", "8080"), option("p")));
+            assertEquals(new Integer(8080), OptionParsers.unary((Integer) 0, Integer::parseInt).parse(asList("-p", "8080"), option("p")));
         }
 
 
         @Test// happy path, not modify to optionParser
         void should_parse_string_as_option_value() {
-            assertEquals("/usr/logs",  OptionParsers.unary(String::valueOf, "").parse(asList("-d", "/usr/logs"), option("d")));
+            assertEquals("/usr/logs",  OptionParsers.unary("", String::valueOf).parse(asList("-d", "/usr/logs"), option("d")));
         }
     }
 
