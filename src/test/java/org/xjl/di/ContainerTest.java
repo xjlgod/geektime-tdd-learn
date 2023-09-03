@@ -1,5 +1,6 @@
 package org.xjl.di;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -133,5 +134,65 @@ public class ContainerTest {
                 assertTrue(classes.contains(AnotherDependency.class));
             }
         }
+
+        @Nested
+        public class FieldInjection {
+            // TDD inject field
+            @Test
+            public void should_inject_dependency_via_field() {
+                Dependency dependency = new Dependency(){};
+                contextConfig.bind(Dependency.class, dependency);
+                contextConfig.bind(ComponentWithFieldInjection.class, ComponentWithFieldInjection.class);
+                ComponentWithFieldInjection component = contextConfig.getContext().get(ComponentWithFieldInjection.class).get();
+                Assertions.assertSame(component.dependency, dependency);
+            }
+
+            @Test
+            public void should_inject_dependency_via_superclass_inject_field() {
+                Dependency dependency = new Dependency(){};
+                contextConfig.bind(Dependency.class, dependency);
+                contextConfig.bind(SubclassWithFieldInjection.class, SubclassWithFieldInjection.class);
+                SubclassWithFieldInjection component = contextConfig.getContext().get(SubclassWithFieldInjection.class).get();
+                Assertions.assertSame(component.dependency, dependency);
+            }
+
+//            public void should_create_component_with_injection_field() {
+//                Context context = Mockito.mock(Context.class);
+//                Dependency dependency = Mockito.mock(Dependency.class);
+//                Mockito.when(context.get(Mockito.eq(Dependency.class))).thenReturn(Optional.ofNullable(dependency));
+//                ConstructorInjectionProvider<ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class);
+//                ComponentWithFieldInjection component = provider.get(context);
+//                Assertions.assertSame(component.dependency, dependency);
+//            }
+
+            // TDD throw exception if field is final
+
+            // TDD provide dependency information for field injection
+            @Test
+            public void should_throw_exception_when_field_dependency_missing() {
+                contextConfig.bind(ComponentWithFieldInjection.class, ComponentWithFieldInjection.class);
+                assertThrows(DependencyNotFoundException.class, () -> contextConfig.getContext());
+            }
+
+            @Test
+            public void should_include_field_dependency_in_dependencies() {
+                ConstructorInjectionProvider<ComponentWithFieldInjection> provider = new ConstructorInjectionProvider<>(ComponentWithFieldInjection.class);
+                Assertions.assertArrayEquals(new Class<?>[]{Dependency.class}, provider.getDependencies().toArray(new Class<?>[]{}));
+            }
+//
+//            class DependencyWithFieldInjection implements Dependency {
+//                @Inject
+//                ComponentWithFieldInjection component;
+//            }
+//
+//            @Test
+//            public void should_throw_exception_when_filed_has_cyclic_dependencies() {
+//                contextConfig.bind(ComponentWithFieldInjection.class, ComponentWithFieldInjection.class);
+//                contextConfig.bind(Dependency.class, DependencyWithFieldInjection.class);
+//
+//                assertThrows(CyclicDependenciesFoundException.class, () -> contextConfig.getContext());
+//            }
+        }
+
     }
 }
